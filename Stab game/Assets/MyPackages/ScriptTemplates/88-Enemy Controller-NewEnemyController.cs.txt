@@ -1,0 +1,39 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public class #SCRIPTNAME# : EnemyController
+{
+
+    protected #ENEMYNAME#Context _context;
+
+    void Start()
+    {
+
+    }
+
+    override protected void Initialize()
+    {
+        List<Type> states = AppDomain.CurrentDomain.GetAssemblies().SelectMany(domainAssembly => domainAssembly.GetTypes())
+        .Where(type => typeof(EnemyState).IsAssignableFrom(type) && !type.IsAbstract && type.ToString().Contains("#ENEMYNAME#")).ToArray().ToList();
+
+
+        EnemyState.GetState getState = GetState;
+        foreach (Type state in states)
+        {
+            _enemyStates.Add(state, (EnemyState)Activator.CreateInstance(state, getState));
+        }
+
+                _context = new #ENEMYNAME#Context
+        {
+            ChangeNPCState = ChangeState,
+            animMan = _enemyAnimationManager,
+        };
+
+        EnemyState newState = GetState(Type.GetType(_initialStateType));
+        newState.SetUpState(_context);
+        _currentNPCState = newState;
+    }
+}

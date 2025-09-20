@@ -1,0 +1,3 @@
+1 - create context with enemy name (e.{enemyName}Context). inherit from enemyContext
+2 - from context menu select create -> Enemy controller. name it ({enemyName}Controller)
+3 - from context menu select create -> state -> enemy state. name it ({enemyName}State{stateName})
