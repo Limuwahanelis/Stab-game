@@ -13,11 +13,12 @@ public class PlayerController : MonoBehaviour
     [Header("Player")]
     [SerializeField] GameObject _mainBody;
     [SerializeField] AnimationManager _playerAnimationManager;
-    [SerializeField] PlayerMovement _playerMovement;
+    [SerializeField] PlayerMovement2D _playerMovement;
+    [SerializeField] PlayerRaycasts2D _raycasts2D;
     [SerializeField] AudioEventPlayer _playerAudioEventPlayer;
+    [SerializeField] Legs2DIK _legsIk;
+    [SerializeField] PlayerMovement2DIK _playerMovementIk;
     //[SerializeField] PlayerChecks _playerChecks;
-    //[SerializeField] PlayerCombat _playerCombat;
-    //[SerializeField] PlayerCollisions _playerCollisions;
     [SerializeField] PlayerHealthSystem _playerHealthSystem;
     private PlayerState _currentPlayerState;
     private PlayerContext _context;
@@ -44,6 +45,9 @@ public class PlayerController : MonoBehaviour
             WaitFrameAndPerformFunction = WaitFrameAndExecuteFunction,
             audioEventPlayer = _playerAudioEventPlayer,
             coroutineHolder = this,
+            playerRaycasts= _raycasts2D,
+            ik = _legsIk,
+            playerMovementIk = _playerMovementIk,
             //checks = _playerChecks,
             //combat = _playerCombat,
             //collisions = _playerCollisions,

@@ -13,6 +13,7 @@ public class PlayerMoveTestState : PlayerState
     public override void Update()
     {
         PerformInputCommand();
+        //_context.ik.TryMoveLegs();
     }
 
     public override void SetUpState(PlayerContext context)
@@ -23,10 +24,11 @@ public class PlayerMoveTestState : PlayerState
     {
         if (direction == Vector2.zero)
         {
-            _context.playerMovement.Stop();
-            return;
+            //_context.playerMovement.Stop();
+            //return;
         }
-        _context.playerMovement.Move(direction, GlobalEnums.MoveType.RUN,true);
+        _context.playerMovementIk.Move(direction);
+        //_context.playerMovement.Move(direction,_context.playerRaycasts.GroundHit.point);
     }
     public override void InterruptState()
     {

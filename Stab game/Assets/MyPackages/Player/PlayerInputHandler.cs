@@ -21,6 +21,18 @@ public class PlayerInputHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //if (_player.IsAlive)
+        //{
+
+        //    if (!PauseSettings.IsGamePaused)
+        //    {
+        //        _player.CurrentPlayerState.Move(_direction);
+
+        //    }
+        //}
+    }
+    private void FixedUpdate()
+    {
         if (_player.IsAlive)
         {
 
@@ -35,6 +47,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         _direction = value.Get<Vector2>();
         if (_debug) Logger.Log(_direction);
+       // _player.CurrentPlayerState.Move(_direction);
     }
     void OnJump(InputValue value)
     {

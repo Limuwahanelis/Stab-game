@@ -17,6 +17,9 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] Ringhandle _jumpHandle;
     [SerializeField] SlopeDetection _slopeDetection;
     [SerializeField] float _jumpStrength;
+    [Header("IK")]
+    [SerializeField] Transform _RLIKTarget;
+    [SerializeField] Transform _LLIKTarget;
 
     private int _flipSide = 1;
     private GlobalEnums.HorizontalDirections _newPlayerDirection;
@@ -42,14 +45,21 @@ public class PlayerMovement2D : MonoBehaviour
 
         }
     }
-    public void Move(Vector2 direction,Vector2 groundRayHitPoint, Vector2 groundNormal)
+    public void MoveForward()
     {
-        if (!_slopeDetection.CanWalkOnSlope()) return;
+
+    }
+    public void Move(Vector2 direction,Vector2 groundRayHitPoint)
+    {
+       // if (!_slopeDetection.CanWalkOnSlope()) return;
         if (direction.x != 0)
         {
             _oldPlayerDirection = _newPlayerDirection;
             _newPlayerDirection = (GlobalEnums.HorizontalDirections)direction.x;
-            _rb.MovePosition(_rb.position + new Vector2(_mainBody.right.x * _flipSide * _speed * Time.deltaTime, -(_rb.position.y- groundRayHitPoint.y)));
+            Vector2 newPos = _rb.position + new Vector2(_mainBody.right.x * _flipSide * _speed * Time.deltaTime,0);
+            newPos.y = groundRayHitPoint.y;
+            //_rb.MovePosition(_rb.position + new Vector2(_mainBody.right.x * _flipSide * _speed * Time.deltaTime, -(_rb.position.y- groundRayHitPoint.y)));
+            _rb.MovePosition(newPos);
             if (direction.x > 0)
             {
                 _flipSide = 1;
@@ -59,16 +69,21 @@ public class PlayerMovement2D : MonoBehaviour
             {
                 _flipSide = -1;
                 _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+
             }
+            Vector3 scale = _RLIKTarget.localScale;
+            scale.x = _flipSide;
+            _RLIKTarget.localScale = scale;
+            _LLIKTarget.localScale = scale;
             _previousDirection = direction.x;
         }
         else
         {
-            if (_previousDirection != 0)
-            {
-                _rb.linearVelocity = new Vector2(0, 0);
-                _rb.MovePosition(_rb.position + new Vector2(_mainBody.right.x * _flipSide * _speed * Time.deltaTime, 0));
-            }
+            //if (_previousDirection != 0)
+            //{
+            //    _rb.linearVelocity = new Vector2(0, 0);
+            //    _rb.MovePosition(_rb.position + new Vector2(_mainBody.right.x * _flipSide * _speed * Time.deltaTime, 0));
+            //}
 
         }
 
