@@ -10,6 +10,7 @@ public class PlayerRaycasts2D : MonoBehaviour
     [SerializeField] Transform _groundRayTran;
     [SerializeField] float _groundRayDistance;
 
+
     private bool _isOnGround;
     private RaycastHit2D _groundHit;
     // Start is called once before the first execution of Update after the MonoBehaviour is created

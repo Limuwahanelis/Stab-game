@@ -19,6 +19,7 @@ public class Legs2DIK : MonoBehaviour
     [SerializeField] Transform _middleOfTheBody;
     [SerializeField] float _maxDistanceFromBody;
     [SerializeField] float _maxDistanceBetweenLegs;
+    [SerializeField] float _moveLegUpheight=0.3f;
     [SerializeField] Transform _mainBody;
     [SerializeField] PlayerRaycasts2D _raycasts;
     [SerializeField] Rigidbody2D _rb;
@@ -28,6 +29,9 @@ public class Legs2DIK : MonoBehaviour
     [Header("Raycasts")]
     [SerializeField] Transform _LLForwardRaycastTrans;
     [SerializeField] Transform _RLForwardRaycastTrans;
+    [SerializeField] Transform _LLGroundRayTran;
+    [SerializeField] Transform _RLGroundRayTran;
+    [SerializeField] float _feetDownRayCast;
     [SerializeField] float _forwardRaycastLength;
     [SerializeField] float _downRaycastLength;
     [Header("Effectors")]
@@ -121,23 +125,48 @@ public class Legs2DIK : MonoBehaviour
         _rb.MovePosition(new Vector3(pos.x, _raycasts.GroundHit.point.y));
         _skeleton.localPosition = new Vector3(0, pos.y, 0);
     }
+    private float GetLegUpDistance(Vector3 startPos,Vector3 targetPos)
+    {
+        if (targetPos.y > startPos.y)
+        {
+            float diff = targetPos.y - startPos.y;
+            return (_moveLegUpheight - diff);
+        }
+        else return _moveLegUpheight;
+    }
     private IEnumerator MoveRightLeg()
     {
         _isMovingRightLeg = true;
         Vector2 startpos = _RLTarget.position;
-        Vector2 targetPos = RightLegRaycast().point;
+        Vector2 currentTargetPos;
+        Vector2 targetPos2 = RightLegRaycast().point;
+        Vector2 targetPos1 = RightLegRaycast().point;
+        targetPos1.x = (startpos.x + targetPos1.x) / 2;
+        targetPos1.y += GetLegUpDistance(startpos,targetPos2);
         float distanceBetweenLegs=0;
-        float time = Vector2.Distance(targetPos, _RLTarget.position) / _speed;
+        float time2 = Vector2.Distance(targetPos2, targetPos1) / _speed;
+        float time1 = Vector2.Distance(targetPos1, _RLTarget.position) / _speed;
         float t = 0;
         Vector3 pos = Vector3.zero;
-        while (t<time)
+        RaycastHit2D hit;
+        while (t<time2+time1)
         {
-            _RLTarget.position = Vector3.Lerp(startpos, targetPos, t/ time);
+            if (t < time1)
+            {
+                _RLTarget.position = Vector3.Lerp(startpos, targetPos1, t / time1);
+
+
+            }
+            else
+            {
+                //if (hit = Physics2D.Raycast(_RLGroundRayTran.position, Vector2.down, _feetDownRayCast, _groundLayer)) _RLTarget.position = hit.point;
+                _RLTarget.position = Vector3.Lerp(targetPos1, targetPos2, (t - time1) / time2);
+            }
             MoveBody(ref distanceBetweenLegs,ref pos);
              t += Time.deltaTime;
             yield return null;
         }
-        _RLTarget.position = targetPos;
+        _RLTarget.position = targetPos2;
         MoveBody(ref distanceBetweenLegs, ref pos);
         _isMovingRightLeg = false;
         _isStepping = false;
@@ -147,19 +176,24 @@ public class Legs2DIK : MonoBehaviour
     {
         _isMovingLeftLeg = true;
         Vector2 startpos = _LLTarget.position;
-        Vector2 targetPos = LeftLegRaycast().point;
-        float time = Vector2.Distance(targetPos, _LLTarget.position) / _speed;
+        Vector2 targetPos2 = LeftLegRaycast().point;
+        Vector2 targetPos1 = LeftLegRaycast().point;
+        targetPos1.x = (startpos.x + targetPos1.x) / 2;
+        targetPos1.y += GetLegUpDistance(startpos, targetPos2);
+        float distanceBetweenLegs = 0;
+        float time2 = Vector2.Distance(targetPos2, targetPos1) / _speed;
+        float time1 = Vector2.Distance(targetPos1, _LLTarget.position) / _speed;
         float t = 0;
-        float distanceBetweenLegs=0;
-        Vector3 pos=Vector3.zero;
-        while (t < time)
+        Vector3 pos = Vector3.zero;
+        while (t < time2 + time1)
         {
-            _LLTarget.position = Vector3.Lerp(startpos, targetPos, t / time);
-            MoveBody(ref  distanceBetweenLegs, ref  pos);
+            if (t < time1) _LLTarget.position = Vector3.Lerp(startpos, targetPos1, t / time1);
+            else _LLTarget.position = Vector3.Lerp(targetPos1, targetPos2, (t - time1) / time2);
+            MoveBody(ref distanceBetweenLegs, ref pos);
             t += Time.deltaTime;
             yield return null;
         }
-        _LLTarget.position = targetPos;
+        _LLTarget.position = targetPos2;
         MoveBody(ref distanceBetweenLegs, ref pos);
         _isMovingLeftLeg = false;
         _isStepping = false;
@@ -182,9 +216,10 @@ public class Legs2DIK : MonoBehaviour
         }
         Gizmos.color = Color.red;
         if (_LLForwardRaycastTrans) Gizmos.DrawLine(_LLForwardRaycastTrans.position, _LLForwardRaycastTrans.position+ _LLForwardRaycastTrans.up * _forwardRaycastLength);
-        Gizmos.color = Color.blue;
-        Vector3 pos = _middleOfTheBody.position;
-        Gizmos.DrawLine(_middleOfTheBody.position + new Vector3(pos.x - _maxDistanceBetweenLegs / 2, -0.25f, 0), _middleOfTheBody.position + new Vector3(pos.x + _maxDistanceBetweenLegs / 2,- 0.25f, 0));
+
+        Gizmos.color = Color.green;
+        if (_LLGroundRayTran) Gizmos.DrawLine(_LLGroundRayTran.position, _LLGroundRayTran.position + Vector3.down * _feetDownRayCast);
+        if (_RLGroundRayTran) Gizmos.DrawLine(_RLGroundRayTran.position, _RLGroundRayTran.position + Vector3.down * _feetDownRayCast);
     }
 }
 
