@@ -20,12 +20,16 @@ public class PlayerMoveTestState : PlayerState
     {
         base.SetUpState(context);
     }
+    public override void Attack(PlayerCombat.AttackModifiers attackModifier = PlayerCombat.AttackModifiers.NONE)
+    {
+        ChangeState(PlayerAttackingState.StateType);
+    }
     public override void Move(Vector2 direction)
     {
         if (direction == Vector2.zero)
         {
             //_context.playerMovement.Stop();
-            //return;
+            return;
         }
         _context.playerMovementIk.Move(direction);
         //_context.playerMovement.Move(direction,_context.playerRaycasts.GroundHit.point);

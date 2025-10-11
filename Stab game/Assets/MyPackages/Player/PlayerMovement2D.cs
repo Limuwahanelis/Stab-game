@@ -8,6 +8,7 @@ public class PlayerMovement2D : MonoBehaviour
     public bool IsPlayerFalling { get => _rb.linearVelocity.y < 0; }
     public Rigidbody2D PlayerRB => _rb;
     [Header("Common")]
+    [SerializeField] Camera _cam;
     [SerializeField] Rigidbody2D _rb;
     [SerializeField] Transform _mainBody;
     [SerializeField] PlayerController _player;
@@ -45,6 +46,19 @@ public class PlayerMovement2D : MonoBehaviour
 
         }
     }
+    private void Update()
+    {
+        if (_cam.ScreenToWorldPoint(HelperClass.MousePos).x < _mainBody.position.x)
+        {
+            _flipSide = -1;
+            _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+        }
+        else
+        {
+            _flipSide = 1;
+            _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+        }
+    }
     public void MoveForward()
     {
 
@@ -60,17 +74,17 @@ public class PlayerMovement2D : MonoBehaviour
             newPos.y = groundRayHitPoint.y;
             //_rb.MovePosition(_rb.position + new Vector2(_mainBody.right.x * _flipSide * _speed * Time.deltaTime, -(_rb.position.y- groundRayHitPoint.y)));
             _rb.MovePosition(newPos);
-            if (direction.x > 0)
-            {
-                _flipSide = 1;
-                _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
-            }
-            if (direction.x < 0)
-            {
-                _flipSide = -1;
-                _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+            //if (direction.x > 0)
+            //{
+            //    _flipSide = 1;
+            //    _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+            //}
+            //if (direction.x < 0)
+            //{
+            //    _flipSide = -1;
+            //    _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
 
-            }
+            //}
             Vector3 scale = _RLIKTarget.localScale;
             scale.x = _flipSide;
             _RLIKTarget.localScale = scale;

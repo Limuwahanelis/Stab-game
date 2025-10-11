@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
@@ -48,6 +49,7 @@ public class Legs2DIK : MonoBehaviour
     private Vector3 _skeletonLowestPos;
     private bool _isStepping = false;
     private LastMovedLeg _lastMovedLeg = LastMovedLeg.LEFT;
+    private bool _waslastMoveForward = true;
     private void Awake()
     {
         _skeletonStartingPos = _skeleton.localPosition;
@@ -56,16 +58,45 @@ public class Legs2DIK : MonoBehaviour
         //_skeleton.position = tmp;
         _skeletonLowestPos= tmp;
     }
+    public RaycastHit2D RightLegRaycastBack()
+    {
+        float xOffset = _RLForwardRaycastTrans.localPosition.x;
+        Vector3 newPos = _RLForwardRaycastTrans.position;
+        newPos.x += xOffset; 
+        Debug.DrawLine(newPos, newPos - _RLForwardRaycastTrans.up * _forwardRaycastLength, Color.magenta, 0.5f);
+        RaycastHit2D hit = Physics2D.Raycast(newPos, -_RLForwardRaycastTrans.up, _forwardRaycastLength, _groundLayer);
+        if (hit) return hit;
+
+        _helperTran.position = newPos - _RLForwardRaycastTrans.up * _forwardRaycastLength;
+        hit = Physics2D.Raycast(_helperTran.position, _helperTran.up, _downRaycastLength, _groundLayer);
+        if (hit == false) hit.point = _RLTarget.position;
+        return hit;
+    }
     public RaycastHit2D RightLegRaycast()
     {
         Debug.DrawLine(_RLForwardRaycastTrans.position, _RLForwardRaycastTrans.position + _RLForwardRaycastTrans.up * _forwardRaycastLength,Color.magenta, 0.5f);
         RaycastHit2D hit = Physics2D.Raycast(_RLForwardRaycastTrans.position, _RLForwardRaycastTrans.up, _forwardRaycastLength, _groundLayer);
-
+        
         if (hit) return hit;
 
         _helperTran.position = _RLForwardRaycastTrans.position + _RLForwardRaycastTrans.up * _forwardRaycastLength;
         hit = Physics2D.Raycast(_helperTran.position, _helperTran.up, _downRaycastLength, _groundLayer);
         if (hit == false) hit.point = _RLTarget.position;
+        return hit;
+    }
+    public RaycastHit2D LeftLegRaycastBack()
+    {
+        float xOffset = _LLForwardRaycastTrans.localPosition.x;
+        Vector3 newPos = _LLForwardRaycastTrans.position;
+        newPos.x += xOffset;
+        Debug.DrawLine(newPos, newPos - _LLForwardRaycastTrans.up * _forwardRaycastLength, Color.magenta, 0.5f);
+        RaycastHit2D hit = Physics2D.Raycast(newPos, -_LLForwardRaycastTrans.up, _forwardRaycastLength, _groundLayer);
+
+        if (hit) return hit;
+
+        _helperTran.position = newPos - _LLForwardRaycastTrans.up * _forwardRaycastLength;
+        hit = Physics2D.Raycast(_helperTran.position, _helperTran.up, _downRaycastLength, _groundLayer);
+        if (hit == false) hit.point = _LLTarget.position;
         return hit;
     }
     public RaycastHit2D LeftLegRaycast()
@@ -80,20 +111,95 @@ public class Legs2DIK : MonoBehaviour
         if (hit == false) hit.point = _LLTarget.position;
         return hit;
     }
+    public void StepBack()
+    {
+        if (_isStepping) return;
+        _isStepping = true;
+        if(_waslastMoveForward)
+        {
+            if (_lastMovedLeg == LastMovedLeg.LEFT)
+            {
+                _lastMovedLeg = LastMovedLeg.LEFT;
+                StartCoroutine(MoveLeftLeg(false));
+
+            }
+            else
+            {
+                _lastMovedLeg = LastMovedLeg.RIGHT;
+                StartCoroutine(MoveRightLeg(false));
+            }
+        }
+        else
+        {
+            if (_lastMovedLeg == LastMovedLeg.LEFT)
+            {
+                _lastMovedLeg = LastMovedLeg.RIGHT;
+                StartCoroutine(MoveRightLeg(false));
+                
+
+            }
+            else
+            {
+                _lastMovedLeg = LastMovedLeg.LEFT;
+                StartCoroutine(MoveLeftLeg(false));
+            }
+           
+        }
+        _waslastMoveForward = false;
+    }
     public void Step()
     {
         if (_isStepping) return;
         _isStepping = true;
-        if(_lastMovedLeg==LastMovedLeg.LEFT)
+        if(_waslastMoveForward)
         {
-            _lastMovedLeg=LastMovedLeg.RIGHT;
-            StartCoroutine(MoveRightLeg());
+            if (_lastMovedLeg == LastMovedLeg.LEFT)
+            {
+                _lastMovedLeg = LastMovedLeg.RIGHT;
+                StartCoroutine(MoveRightLeg(true));
+            }
+            else
+            {
+                _lastMovedLeg = LastMovedLeg.LEFT;
+                StartCoroutine(MoveLeftLeg(true));
+            }
         }
         else
         {
-            _lastMovedLeg = LastMovedLeg.LEFT;
-            StartCoroutine(MoveLeftLeg());
+            if (_lastMovedLeg == LastMovedLeg.LEFT)
+            {
+                _lastMovedLeg = LastMovedLeg.LEFT;
+                StartCoroutine(MoveLeftLeg(true));
+            }
+            else
+            {
+                _lastMovedLeg = LastMovedLeg.RIGHT;
+                StartCoroutine(MoveRightLeg(true));
+            }
         }
+        _waslastMoveForward = true;
+    }
+    public bool TryMoveLegsBack()
+    {
+        if (_isMovingLeftLeg || _isMovingRightLeg) return false;
+
+        if (Vector2.Distance(_RLTarget.position, _middleOfTheBody.position) > _maxDistanceFromBody)
+        {
+            if (Vector2.Distance(_RLTarget.position, _LLTarget.position) > _maxDistanceBetweenLegs)
+            {
+                StartCoroutine(MoveRightLeg(false));
+                return true;
+            }
+        }
+        else if (Vector2.Distance(_LLTarget.position, _middleOfTheBody.position) > _maxDistanceFromBody)
+        {
+            if (Vector2.Distance(_RLTarget.position, _LLTarget.position) > _maxDistanceBetweenLegs)
+            {
+                StartCoroutine(MoveLeftLeg(false));
+                return true;
+            }
+        }
+        return false;
     }
     public bool TryMoveLegs()
     {
@@ -103,7 +209,7 @@ public class Legs2DIK : MonoBehaviour
         {
             if (Vector2.Distance(_RLTarget.position, _LLTarget.position) > _maxDistanceBetweenLegs)
             {
-                StartCoroutine(MoveRightLeg());
+                StartCoroutine(MoveRightLeg(true));
                 return true;
             }
         }
@@ -111,7 +217,7 @@ public class Legs2DIK : MonoBehaviour
         {
             if (Vector2.Distance(_RLTarget.position, _LLTarget.position) > _maxDistanceBetweenLegs)
             {
-                StartCoroutine(MoveLeftLeg());
+                StartCoroutine(MoveLeftLeg(true));
                 return true;
             }
         }
@@ -134,13 +240,18 @@ public class Legs2DIK : MonoBehaviour
         }
         else return _moveLegUpheight;
     }
-    private IEnumerator MoveRightLeg()
+    private IEnumerator MoveRightLeg(bool moveForward)
     {
+        Logger.Log("moving right leg");
         _isMovingRightLeg = true;
         Vector2 startpos = _RLTarget.position;
-        Vector2 currentTargetPos;
-        Vector2 targetPos2 = RightLegRaycast().point;
-        Vector2 targetPos1 = RightLegRaycast().point;
+        Vector2 targetPos2 = moveForward?RightLegRaycast().point: RightLegRaycastBack().point;
+        Vector2 targetPos1 = moveForward ? RightLegRaycast().point : RightLegRaycastBack().point;
+
+        if(Vector2.Distance(_LLTarget.position,targetPos2)<0.200f)
+        {
+            targetPos2 = targetPos1 = _LLTarget.position;
+        }
         targetPos1.x = (startpos.x + targetPos1.x) / 2;
         targetPos1.y += GetLegUpDistance(startpos,targetPos2);
         float distanceBetweenLegs=0;
@@ -172,12 +283,18 @@ public class Legs2DIK : MonoBehaviour
         _isStepping = false;
     }
 
-    private IEnumerator MoveLeftLeg()
+    private IEnumerator MoveLeftLeg(bool moveForward)
     {
+        Logger.Log("moving left leg");
         _isMovingLeftLeg = true;
         Vector2 startpos = _LLTarget.position;
-        Vector2 targetPos2 = LeftLegRaycast().point;
-        Vector2 targetPos1 = LeftLegRaycast().point;
+        Vector2 targetPos2 = moveForward?LeftLegRaycast().point: LeftLegRaycastBack().point;
+        Vector2 targetPos1 = moveForward ? LeftLegRaycast().point : LeftLegRaycastBack().point;
+
+        if (Vector2.Distance(_LLTarget.position, targetPos2) < 0.200f)
+        {
+            targetPos2 = targetPos1 = _RLTarget.position;
+        }
         targetPos1.x = (startpos.x + targetPos1.x) / 2;
         targetPos1.y += GetLegUpDistance(startpos, targetPos2);
         float distanceBetweenLegs = 0;

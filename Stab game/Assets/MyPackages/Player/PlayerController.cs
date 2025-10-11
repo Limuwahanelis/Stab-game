@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AudioEventPlayer _playerAudioEventPlayer;
     [SerializeField] Legs2DIK _legsIk;
     [SerializeField] PlayerMovement2DIK _playerMovementIk;
+    [SerializeField] Transform _attackTarget;
     //[SerializeField] PlayerChecks _playerChecks;
     [SerializeField] PlayerHealthSystem _playerHealthSystem;
     private PlayerState _currentPlayerState;
@@ -48,6 +49,7 @@ public class PlayerController : MonoBehaviour
             playerRaycasts= _raycasts2D,
             ik = _legsIk,
             playerMovementIk = _playerMovementIk,
+            attackTarget = _attackTarget,
             //checks = _playerChecks,
             //combat = _playerCombat,
             //collisions = _playerCollisions,

@@ -16,6 +16,8 @@ public class PlayerContext
     public AudioEventPlayer audioEventPlayer;
     public PlayerRaycasts2D playerRaycasts;
     public Legs2DIK ik;
+    public Transform attackTarget;
+    
     //public PlayerChecks checks;
     //public PlayerCombat combat;
     //public PlayerCollisions collisions;
