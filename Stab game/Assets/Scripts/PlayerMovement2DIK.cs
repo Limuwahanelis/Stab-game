@@ -40,10 +40,51 @@ public class PlayerMovement2DIK : MonoBehaviour
     }
     private void Update()
     {
+        //_oldPlayerDirection = _newPlayerDirection;
+        //if (Input.GetKeyDown(KeyCode.J))
+        //{
+        //    _newPlayerDirection = GlobalEnums.HorizontalDirections.LEFT;
+        //}
+        //else if (Input.GetKeyDown(KeyCode.K))
+        //{
+        //    _newPlayerDirection = GlobalEnums.HorizontalDirections.RIGHT;
+
+        //}
+
+        //if (_newPlayerDirection != _oldPlayerDirection)
+        //{
+
+        //    if (_newPlayerDirection == GlobalEnums.HorizontalDirections.RIGHT)
+        //    {
+        //        _flipSide = 1;
+        //        _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+
+        //    }
+
+        //    if (_newPlayerDirection == GlobalEnums.HorizontalDirections.LEFT)
+        //    {
+        //        _flipSide = -1;
+        //        _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
+
+        //    }
+
+        //    _ik.SetDirection(_newPlayerDirection);
+        //    Vector3 scale = _RLIKTarget.localScale;
+        //    scale.x = _flipSide;
+        //    _RLIKTarget.localScale = scale;
+        //    _LLIKTarget.localScale = scale;
+        //    //Vector2 tmp = _LLIKTarget.position;
+        //    //_LLIKTarget.position = _RLIKTarget.position;
+        //    //_RLIKTarget.position = tmp;
+        //    Logger.Log(_flipSide);
+
+
+        //}
         _oldPlayerDirection = _newPlayerDirection;
         _newPlayerDirection = (_cam.ScreenToWorldPoint(HelperClass.MousePos).x < _player.MainBody.transform.position.x) ? GlobalEnums.HorizontalDirections.LEFT : GlobalEnums.HorizontalDirections.RIGHT;
         //Logger.Log((_cam.ScreenToWorldPoint(HelperClass.MousePos)));
         //Logger.Log(_newPlayerDirection);
+        
         if (_newPlayerDirection != _oldPlayerDirection)
         {
 
@@ -58,6 +99,7 @@ public class PlayerMovement2DIK : MonoBehaviour
                 _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
 
             }
+            _ik.SetDirection(_newPlayerDirection);
             Vector3 scale = _RLIKTarget.localScale;
             scale.x = _flipSide;
             _RLIKTarget.localScale = scale;
@@ -65,7 +107,7 @@ public class PlayerMovement2DIK : MonoBehaviour
             //Vector2 tmp = _LLIKTarget.position;
             //_LLIKTarget.position = _RLIKTarget.position;
             //_RLIKTarget.position = tmp;
-            Logger.Log(_flipSide);
+            //Logger.Log(_flipSide);
         }
 
 
@@ -95,13 +137,13 @@ public class PlayerMovement2DIK : MonoBehaviour
         {
             if ((_cam.ScreenToWorldPoint(HelperClass.MousePos).x < _player.MainBody.transform.position.x))
             {
-                _lastStep = LastStep.RIGHT_BACK;
+               // _lastStep = LastStep.RIGHT_BACK;
                 _ik.StepBack();
                 
             }
             else
             {
-                _lastStep = LastStep.RIGHT_FORWARD;
+               // _lastStep = LastStep.RIGHT_FORWARD;
                 _ik.Step();
             }
         }

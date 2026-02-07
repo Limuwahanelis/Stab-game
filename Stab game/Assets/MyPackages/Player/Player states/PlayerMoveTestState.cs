@@ -22,7 +22,7 @@ public class PlayerMoveTestState : PlayerState
     }
     public override void Attack(PlayerCombat.AttackModifiers attackModifier = PlayerCombat.AttackModifiers.NONE)
     {
-        ChangeState(PlayerAttackingState.StateType);
+       // ChangeState(PlayerAttackingState.StateType);
     }
     public override void Move(Vector2 direction)
     {
