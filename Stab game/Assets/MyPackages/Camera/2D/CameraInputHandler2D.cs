@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
+using static UnityEngine.Rendering.DebugUI;
 
 public class CameraInputHandler2D : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class CameraInputHandler2D : MonoBehaviour
             _LMBAction.action.canceled += LMB;
             _LMBAction.action.started += LMB;
         }
+        HelperClass.SetMousePos(Vector2.zero);
     }
     // Update is called once per frameMov
     void Update()
@@ -71,6 +73,7 @@ public class CameraInputHandler2D : MonoBehaviour
     }
     void OnMousePos(InputValue value)
     {
+
         HelperClass.SetMousePos(value.Get<Vector2>());
     }
     public void LMB(InputAction.CallbackContext context)

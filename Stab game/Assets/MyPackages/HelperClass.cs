@@ -10,9 +10,15 @@ public class HelperClass : MonoBehaviour
     /// </summary>
     public static Vector3 MousePos => _mousePos;
     private static Vector2 _mousePos;
+    private static Vector2 _hiddenMousePos;
     public static void SetMousePos(Vector2 pos)
     {
-        _mousePos = pos;
+        _hiddenMousePos = pos;
+        if (_hiddenMousePos.x > 0 && _hiddenMousePos.x < Screen.width && _hiddenMousePos.y > 0 && _hiddenMousePos.y < Screen.height)
+        {
+            _mousePos = pos;
+        }
+
     }
     public static IEnumerator DelayedFunction(float timeToWait, Action function)
     {
