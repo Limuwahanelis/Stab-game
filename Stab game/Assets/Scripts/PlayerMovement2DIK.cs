@@ -6,7 +6,7 @@ public class PlayerMovement2DIK : MonoBehaviour
 {
     enum LastStep
     {
-        RIGHT_FORWARD,LEFT_FORWARD,RIGHT_BACK,LEFT_BACK
+        RIGHT_FORWARD, LEFT_FORWARD, RIGHT_BACK, LEFT_BACK
     }
     public int FlipSide => _flipSide;
     public bool IsPlayerFalling { get => _rb.linearVelocity.y < 0; }
@@ -14,10 +14,11 @@ public class PlayerMovement2DIK : MonoBehaviour
     [Header("Common")]
     [SerializeField] Camera _cam;
     [SerializeField] Rigidbody2D _rb;
-    [SerializeField] PlayerRaycasts2D _raycasts;
     [SerializeField] PlayerController _player;
+    [SerializeField] Transform _toRotate;
+    [SerializeField] Transform _raycastsTran;
     [SerializeField] float _normalGravityForce;
-    [SerializeField] float _distanceTotravelForStep=0.2f;
+    [SerializeField] float _distanceTotravelForStep = 0.2f;
     [SerializeField] float _speed;
     [Header("Jump")]
     [SerializeField] Ringhandle _jumpHandle;
@@ -33,6 +34,9 @@ public class PlayerMovement2DIK : MonoBehaviour
     private GlobalEnums.HorizontalDirections _oldPlayerDirection;
     private float _previousDirection;
     private bool _isMoving = false;
+    private bool _isStandingLegToLeg = true;
+    private bool _wasLastStepForward = false;
+    private GlobalEnums.HorizontalDirections _upperBodyDirection = GlobalEnums.HorizontalDirections.RIGHT;
     private GlobalEnums.HorizontalDirections _lastStepDirection;
     public void MoveForward()
     {
@@ -41,62 +45,146 @@ public class PlayerMovement2DIK : MonoBehaviour
     private void Update()
     {
         _oldPlayerDirection = _newPlayerDirection;
- 
-        //if (HelperClass.MousePos.x > 0 && HelperClass.MousePos.x < Screen.width && HelperClass.MousePos.y > 0 && HelperClass.MousePos.y < Screen.height)
-        //{
-            _newPlayerDirection = (_cam.ScreenToWorldPoint(HelperClass.MousePos).x < _player.MainBody.transform.position.x) ? GlobalEnums.HorizontalDirections.LEFT : GlobalEnums.HorizontalDirections.RIGHT;
-        //}
 
-        
+        _newPlayerDirection = (_cam.ScreenToWorldPoint(HelperClass.MousePos).x < _player.MainBody.transform.position.x) ? GlobalEnums.HorizontalDirections.LEFT : GlobalEnums.HorizontalDirections.RIGHT;
+
+        if (_newPlayerDirection == GlobalEnums.HorizontalDirections.RIGHT)
+        {
+            _flipSide = 1;
+        }
+        if (_newPlayerDirection == GlobalEnums.HorizontalDirections.LEFT)
+        {
+            _flipSide = -1;
+
+        }
+        if (!_ik.IsMoveing && _isStandingLegToLeg)
+        {
+            Vector3 scale = Vector3.one;
+            scale.x = _flipSide;
+            _RLIKTarget.localScale = scale;
+            _LLIKTarget.localScale = scale;
+            _toRotate.localScale = Vector3.one;
+            _player.MainBody.transform.localScale = scale;
+            _ik.SetDirection(_newPlayerDirection);
+        }
+
+        // TODO: Gdy obrucony na kucaku, obruc calego po backstepie
+
         if (_newPlayerDirection != _oldPlayerDirection)
         {
 
             if (_newPlayerDirection == GlobalEnums.HorizontalDirections.RIGHT)
             {
                 _flipSide = 1;
-                _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
             }
             if (_newPlayerDirection == GlobalEnums.HorizontalDirections.LEFT)
             {
                 _flipSide = -1;
-                _player.MainBody.transform.localScale = new Vector3(_flipSide, _player.MainBody.transform.localScale.y, _player.MainBody.transform.localScale.z);
-
             }
-            _ik.SetDirection(_newPlayerDirection);
-            Vector3 scale = _RLIKTarget.localScale;
-            scale.x = _flipSide;
-            _RLIKTarget.localScale = scale;
-            _LLIKTarget.localScale = scale;
+
+            Vector3 scale = _toRotate.localScale;
+            if (_ik.IsMoveing)
+            {
+                if (_player.MainBody.transform.localScale.x > 0)
+                {
+                    scale.x = _flipSide;
+                    _toRotate.localScale = scale;
+                }
+                else
+                {
+                    scale.x = -_flipSide;
+                    _toRotate.localScale = scale;
+                }
+            }
+            else
+            {
+                if (_isStandingLegToLeg)
+                {
+                    scale.x = _flipSide;
+                    _toRotate.localScale = Vector3.one;
+                    _player.MainBody.transform.localScale = scale;
+                    Logger.Log("Change targets scale");
+                    _ik.SetDirection(_newPlayerDirection);
+                    _RLIKTarget.localScale = scale;
+                    _LLIKTarget.localScale = scale;
+                }
+                else
+                {
+                    if (_player.MainBody.transform.localScale.x > 0)
+                    {
+                        scale.x = _flipSide;
+                        _toRotate.localScale = scale;
+                    }
+                    else
+                    {
+                        scale.x = -_flipSide;
+                        _toRotate.localScale = scale;
+                    }
+                }
+            }
+
         }
     }
     public void Move(Vector2 direction)
     {
         if (_ik.IsMoveing) return;
-        if(direction.x>0)
+        if (direction.x > 0)
         {
-            if ((_cam.ScreenToWorldPoint(HelperClass.MousePos).x < _player.MainBody.transform.position.x))
+            if (_isStandingLegToLeg)
             {
-               // _lastStep = LastStep.RIGHT_BACK;
-                _ik.StepBack();
-                
+                if (_toRotate.lossyScale.x >= 0)
+                {
+                    _ik.Step();
+                }
+                else _ik.StepBack();
             }
             else
             {
-               // _lastStep = LastStep.RIGHT_FORWARD;
-                _ik.Step();
+                if (_toRotate.lossyScale.x >= 0)
+                {
+                    if (_player.MainBody.transform.localScale.x >= 0)
+                    {
+                        _ik.Step();
+                    }
+                    else _ik.StepBack();
+
+                }
+                else
+                {
+                    _ik.StepBack();
+                }
             }
+
         }
         else
         {
-            if ((_cam.ScreenToWorldPoint(HelperClass.MousePos).x > _player.MainBody.transform.position.x))
+            if (_isStandingLegToLeg)
             {
-                _ik.StepBack();
+                if (_toRotate.lossyScale.x >= 0)
+                {
+                    _ik.StepBack();
+                }
+                else _ik.Step();
             }
             else
             {
-                _ik.Step();
+                if (_toRotate.lossyScale.x >= 0)
+                {
+                    _ik.StepBack();
+                }
+                else
+                {
+                    if (_player.MainBody.transform.localScale.x >= 0)
+                    {
+                        _ik.StepBack();
+                    }
+                    else _ik.Step();
+
+                }
             }
         }
+        if (_isStandingLegToLeg) _isStandingLegToLeg = false;
+        else _isStandingLegToLeg = true;
 
     }
 
@@ -105,11 +193,11 @@ public class PlayerMovement2DIK : MonoBehaviour
         _isMoving = true;
         //_ik.Step();
         Vector2 startPos = _rb.position;
-        float time = _distanceTotravelForStep/_speed;
+        float time = _distanceTotravelForStep / _speed;
         float t = 0;
-        while(t< time)
+        while (t < time)
         {
-            Vector2 pos = Vector2.Lerp(startPos, newPos, t/time);
+            Vector2 pos = Vector2.Lerp(startPos, newPos, t / time);
             t += Time.fixedDeltaTime;
             _rb.MovePosition(pos);
             yield return new WaitForFixedUpdate();

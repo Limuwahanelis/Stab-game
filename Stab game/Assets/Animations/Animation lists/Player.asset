@@ -12,17 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd4d54c32212e7240ab84aaff9841a04, type: 3}
   m_Name: Player
   m_EditorClassIdentifier: 
-  animations:
-  - name: Walk
-    duration: 1
-    speed: 1
-    layer: 0
-  - name: Empty
-    duration: 1
-    speed: 1
-    layer: 0
-  - name: Attack
-    duration: 0.33333334
-    speed: 1
-    layer: 0
+  animations: []
   animatorController: {fileID: 9100000, guid: aa674a21462fc134eb81c30dbdd9e74f, type: 2}

@@ -15,6 +15,7 @@ public class Legs2DIK : MonoBehaviour
     {
         LEFT=-1,NONE,RIGHT=1
     }
+    public bool IsStanding => _isStanding;
     public bool IsMoveing => _isStepping;
     [Header("Debug")]
     [SerializeField] bool _debug;
@@ -66,6 +67,8 @@ public class Legs2DIK : MonoBehaviour
     private GlobalEnums.HorizontalDirections _lastMoveDir=GlobalEnums.HorizontalDirections.RIGHT;
     private Vector3 _lowestCurrentSkeletonPos;
     private float _shortestCurrentDistanceBetweenLegs;
+    private bool _isStanding = true;
+
     private void Awake()
     {
         _skeletonStartingPos = _skeleton.localPosition;
@@ -368,6 +371,7 @@ public class Legs2DIK : MonoBehaviour
     {
         distanceBetweenLegs = Vector2.Distance((Vector2)_RLTarget.position, (Vector2)_LLTarget.position);
         float yPos = Mathf.Lerp(_highestSkeletonPosLocal,_lowestSkeletonPosLocal , distanceBetweenLegs / _maxDistanceBetweenLegs);
+          
         pos.y = yPos;
         pos.x = (_LLTarget.position.x + _RLTarget.position.x) / 2;
         _rb.MovePosition(new Vector3(pos.x, _raycasts.GroundHit.point.y));
@@ -436,7 +440,7 @@ public class Legs2DIK : MonoBehaviour
         _RLTarget.position = targetPos2;
         MoveBody(ref distanceBetweenLegs, ref pos, legYDiff);
         _isMovingRightLeg = false;
-        _isStepping = false;
+       
         if(_skeleton.localPosition.y<_skeletonLowestPos.y)
         {
             _lowestCurrentSkeletonPos.y = _skeleton.localPosition.y;
@@ -446,6 +450,11 @@ public class Legs2DIK : MonoBehaviour
             _lowestCurrentSkeletonPos = _skeletonLowestPos;
         }
 
+
+        if (_lastMoveDir == GlobalEnums.HorizontalDirections.RIGHT && _lastMovedLeg == LastMovedLeg.LEFT) _isStanding = true;
+        else _isStanding = false;
+        yield return null;
+        _isStepping = false;
     }
 
     private IEnumerator MoveLeftLeg(bool moveForward)
@@ -493,10 +502,17 @@ public class Legs2DIK : MonoBehaviour
         }
         MoveBody(ref distanceBetweenLegs, ref pos, legYDiff);
         _isMovingLeftLeg = false;
-        _isStepping = false;
         if (_skeleton.localPosition.y < _skeletonLowestPos.y)_lowestCurrentSkeletonPos.y = _skeleton.localPosition.y;
         else _lowestCurrentSkeletonPos = _skeletonLowestPos;
+        if(_waslastMoveForward)
+        {
+            _isStanding = true;
+        }
+        if (_forwardDir == _lastMoveDir) _isStanding = true;
+        else _isStanding = false;
 
+        yield return null;
+        _isStepping = false;
     }
 
 
